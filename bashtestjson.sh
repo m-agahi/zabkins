@@ -36,7 +36,6 @@ function get_job_success_rate {
 			continue
 		fi
 		echo $line | ./$jq '.healthReport[].score' 
-		get_job_current_status $line
 	done < /tmp/api2.json 	
 }
 
@@ -51,3 +50,4 @@ function get_job_current_status {
 get_job_names
 get_job_descriptions
 get_job_success_rate
+get_job_current_status 0
