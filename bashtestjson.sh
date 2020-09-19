@@ -5,14 +5,15 @@ server="192.168.145.173:8080"
 username="monitor"
 token="119cf029e9a6e0d1ed8445137a6f17d658"
 url="http://$username:$token@$server"
+jq='jq-linux64'
 > /tmp/api2.json
-
+> /tmp/jobnames.txt
+> /tmp/api1.json
 
 function get_job_names {
 	curl --silent --show-error $url/api/json > /tmp/api1.json
-	./jq-linux64 '.jobs[].name' /tmp/api1.json | sed -e 's/^"\|"$//g' > /tmp/jobnames.txt
+	./$jq '.jobs[].name' /tmp/api1.json | sed -e 's/^"\|"$//g' > /tmp/jobnames.txt
 }
-
 
 function get_job_descriptions {
 	while IFS= read -r line 
@@ -34,9 +35,18 @@ function get_job_success_rate {
 		then
 			continue
 		fi
-		echo $line | ./jq-linux64 '.healthReport[].score' 
+		echo $line | ./$jq '.healthReport[].score' 
+		get_job_current_status $line
 	done < /tmp/api2.json 	
 }
+
+function get_job_current_status {
+
+	status=`./$jq '.jobs[$1].color' /tmp/api1.json | sed -e 's/^"\|"$//g'`
+	echo $status	
+
+}
+
 
 get_job_names
 get_job_descriptions
