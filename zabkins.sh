@@ -6,34 +6,40 @@ username="monitor"
 token="119cf029e9a6e0d1ed8445137a6f17d658"
 url="http://$username:$token@$server"
 jq='jq-linux64'
-
-> /tmp/jenkins_api.json
-> /tmp/jenkins_jobnames.txt
-> /tmp/jenkins_job_api.json
+jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
+jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
+jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
+> $jenkins_api_file
+> $jenkins_jobnames_file
+> $jenkins_job_api_file
 
 function get_job_count {
-	curl --silent --show-error $url/api/json > /tmp/jenkins_api.json
-	./$jq '.jobs[].name' /tmp/jenkins_api.json | sed -e 's/^"\|"$//g' | wc -l
+	curl --silent --show-error $url/api/json > $jenkins_api_file
+	job_count=`./$jq '.jobs[].name' /tmp/jenkins_api.json | sed -e 's/^"\|"$//g' | wc -l`
+	cat << EOF
+{ "data": [
+{ "{#JOBS}": $job_count  },
+]}
+EOF
 }
 
 function get_job_names {
-	curl --silent --show-error $url/api/json > /tmp/jenkins_api.json
-	./$jq '.jobs[].name' /tmp/jenkins_api.json | sed -e 's/^"\|"$//g' > /tmp/jenkins_jobnames.txt
+	curl --silent --show-error $url/api/json > $jenkins_api_file
+	./$jq '.jobs[].name' /tmp/jenkins_api.json | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
 }
 
 function get_job_index {
 	search_string="$1"
-
 }
 
 function get_job_descriptions {
 	while IFS= read -r line 
 	do
-		echo  -e "#!#" >> /tmp/jenkins_job_api.json
+		echo  -e "#!#" >> $jenkins_job_api_file
 		line=`echo $line | sed 's| |\%20|g'`
-		curl --silent --show-error $url/job/$line/api/json >> /tmp/jenkins_job_api.json
-		echo  >> /tmp/jenkins_job_api.json
-	done < /tmp/jenkins_jobnames.txt
+		curl --silent --show-error $url/job/$line/api/json >> $jenkins_job_api_file
+		echo  >> $jenkins_job_api_file
+	done < $jenkins_jobnames_file
 }
 
 function get_job_success_rate {
@@ -53,7 +59,7 @@ function get_job_success_rate {
 			search_string=".healthReport[$1].score"
 			echo $line | ./$jq $search_string
 		fi
-	done < /tmp/jenkins_job_api.json 	
+	done < $jenkins_job_api_file 	
 }
 
 function get_job_current_status {
