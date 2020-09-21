@@ -21,14 +21,18 @@ function get_job_count {
 
 function get_job_names {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
-	./$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
+	bash $jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
 }
 
-#	cat << EOF
-# { "data": [
-# { "{#JOBS}": $job_count  },
-#]}
-#EOF
+function return_job_names {
+	echo  -n '{ "data": ['
+	while IFS= read -r line
+	do
+		echo -ne '\n "{#JOBNAME}": '$line'  },'
+		
+	done < $jenkins_jobnames_file
+	echo -e '\b\n ]}' 
+}
 
 function get_job_index {
 	search_string="$1"
@@ -74,6 +78,10 @@ function get_job_current_status {
 if [[ $1=="jobcount" ]]
 then
 	get_job_count
+elif [[ $1=="jobnames" ]]
+then
+	get_job_names
+	return_job_names
 fi
 
 
