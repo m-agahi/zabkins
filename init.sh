@@ -16,5 +16,6 @@ then
     cp -v -f ./zabkins.conf /etc/zabbix/zabbix_agentd.d/
     cp -v -f ./zabkins.sh /etc/zabbix/scripts/
     cp -v -f ./jq-linux64 /etc/zabbix/scripts/
+    systemctl restart zabbix-agent
 fi
 
