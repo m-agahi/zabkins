@@ -31,12 +31,12 @@ function return_job_names {
 	echo  -n '{ "data": [' > $jenkins_return_file
 	while IFS= read -r line
 	do
-		get_job_descriptions $line		
-		echo -ne '\n { "{#JOBNAME}": "'$line','$jenkins_job_success_rate'" },' >> $jenkins_return_file
+		get_job_descriptions `echo $line | sed 's/ /\%20/g'`
+		data=`echo $line,$jenkins_job_success_rate`
+		echo -ne '\n { "{#JOBNAME}": "'$data'" },' >> $jenkins_return_file
 	done < $jenkins_jobnames_file
 	echo -e ']}' >> $jenkins_return_file
 	sed -i -e 's|\,\]\}|\n\]\}|' $jenkins_return_file
-	#cat $jenkins_return_file
 }
 
 function get_job_descriptions {
@@ -47,10 +47,10 @@ function get_job_descriptions {
 }
 
 function get_job_success_rate {
-	while IFS= read -r line
+	while IFS= read -r line_1
 	do
 		search_string=".healthReport[].score"
-		jenkins_job_success_rate=`echo $line | $jq $search_string`
+		jenkins_job_success_rate=`echo $line_1 | $jq $search_string`
 	done < $jenkins_job_api_file 	
 }
 
