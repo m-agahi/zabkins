@@ -5,7 +5,7 @@ then
     if [ ! -d /etc/zabbix/tmp ]
     then 
         mkdir -v /etc/zabbix/tmp
-        chmod -v 777 /etc/zabbix/tmp 
+        chmod -v 777 /etc/zabbix/tmp
     fi
     if [ ! -d /etc/zabbix/scripts ]
     then
