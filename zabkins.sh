@@ -37,7 +37,6 @@ function return_job_names {
 			item=`echo $item | sed 's/ /_/g'`
 			line=`echo $line | sed 's/ /_/g'`
 			data=`echo $line"_"$item`
-			echo $data
 			echo -ne '\n { "{#JOBNAME}": "'$data'" },' >> $jenkins_return_file
 		done
 	done < $jenkins_jobnames_file
