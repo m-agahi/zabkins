@@ -50,7 +50,7 @@ function get_job_success_rate {
 	while IFS= read -r line
 	do
 		search_string=".healthReport[].score"
-		jenkins_job_success_rate=`echo $line | ./$jq $search_string`
+		jenkins_job_success_rate=`echo $line | $jq $search_string`
 	done < $jenkins_job_api_file 	
 }
 
