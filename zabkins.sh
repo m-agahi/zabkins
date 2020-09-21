@@ -15,7 +15,7 @@ jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
 
 function get_job_count {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
-	job_count=`./$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' | wc -l`
+	job_count=`$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' | wc -l`
 	echo $job_count
 }
 
