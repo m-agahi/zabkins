@@ -25,7 +25,7 @@ EOF
 
 function get_job_names {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
-	./$jq '.jobs[].name' /tmp/jenkins_api.json | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
+	./$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
 }
 
 function get_job_index {
@@ -64,7 +64,7 @@ function get_job_success_rate {
 
 function get_job_current_status {
 	search_string=".jobs[$1].color"
-	status=`./$jq $search_string /tmp/api1.json | sed -e 's/^"\|"$//g'`
+	status=`./$jq $search_string $jenkins_api_file | sed -e 's/^"\|"$//g'`
 	echo $status	
 
 }
