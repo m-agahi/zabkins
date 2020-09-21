@@ -1,6 +1,6 @@
 #!/bin/bash
 
-inputfile=$1
+### initial variables
 server="192.168.145.173:8080"
 username="monitor"
 token="119cf029e9a6e0d1ed8445137a6f17d658"
@@ -9,9 +9,12 @@ jq='/etc/zabbix/scripts/jq-linux64'
 jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
 jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
 jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
+
 > $jenkins_api_file
 > $jenkins_jobnames_file
 > $jenkins_job_api_file
+
+
 
 function get_job_count {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
@@ -19,24 +22,27 @@ function get_job_count {
 	echo $job_count
 }
 
+
 function get_job_names {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
-	 `$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g'` > $jenkins_jobnames_file
+	$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
 }
 
 function return_job_names {
 	echo  -n '{ "data": ['
 	while IFS= read -r line
 	do
-		echo -ne '\n "{#JOBNAME}": '$line'  },'
+		echo -ne '\n { "{#JOBNAME}": "'$line'"  },'
 		
 	done < $jenkins_jobnames_file
 	echo -e '\b\n ]}' 
 }
 
+
 function get_job_index {
 	search_string="$1"
 }
+
 
 function get_job_descriptions {
 	while IFS= read -r line 
@@ -47,6 +53,7 @@ function get_job_descriptions {
 		echo  >> $jenkins_job_api_file
 	done < $jenkins_jobnames_file
 }
+
 
 function get_job_success_rate {
 	while IFS= read -r line
@@ -75,17 +82,11 @@ function get_job_current_status {
 
 }
 
-if [[ $1="jobcount" ]]
+if  [ $1 = 'jobcount' ] 
 then
 	get_job_count
-elif [[ $1="jobnames" ]]
+elif [ $1 = 'jobnames' ] 
 then
 	get_job_names
 	return_job_names
 fi
-
-
-#get_job_names
-#get_job_descriptions
-#get_job_success_rate 0
-#get_job_current_status 0 
