@@ -73,6 +73,7 @@ elif [ $1 = 'jobnames' ]
 then
 	get_job_names
 	return_job_names
+	cat $jenkins_return_file
 fi
 
 
