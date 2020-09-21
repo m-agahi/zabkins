@@ -16,17 +16,19 @@ jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
 function get_job_count {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
 	job_count=`./$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' | wc -l`
-	cat << EOF
-{ "data": [
-{ "{#JOBS}": $job_count  },
-]}
-EOF
+	echo $job_count
 }
 
 function get_job_names {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
 	./$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
 }
+
+#	cat << EOF
+# { "data": [
+# { "{#JOBS}": $job_count  },
+#]}
+#EOF
 
 function get_job_index {
 	search_string="$1"
