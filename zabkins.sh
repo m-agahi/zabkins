@@ -21,7 +21,7 @@ function get_job_count {
 
 function get_job_names {
 	curl --silent --show-error $url/api/json > $jenkins_api_file
-	bash $jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g' > $jenkins_jobnames_file
+	 `$jq '.jobs[].name' $jenkins_api_file | sed -e 's/^"\|"$//g'` > $jenkins_jobnames_file
 }
 
 function return_job_names {
