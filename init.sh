@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#zabbix sender should be installed
+#zabbix agent should be installed
+
 if [ -d /etc/zabbix ]
 then 
     if [ ! -d /etc/zabbix/tmp ]
