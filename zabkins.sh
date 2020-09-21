@@ -10,7 +10,7 @@ jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
 jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
 jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
 jenkins_return_file="/etc/zabbix/tmp/jenkins_return.txt"
-
+jenkins_job_items="success.rate"
 > $jenkins_api_file
 > $jenkins_jobnames_file
 > $jenkins_job_api_file
@@ -31,8 +31,12 @@ function return_job_names {
 	echo  -n '{ "data": [' > $jenkins_return_file
 	while IFS= read -r line
 	do
-		get_job_descriptions `echo $line | sed 's/ /\%20/g'`
-		data=`echo $line $success_rate`
+#		get_job_descriptions `echo $line | sed 's/ /\%20/g'`
+		for item in $jenkins_job_items
+		do
+#			item=`echo $item | sed 's/_/ /g'`
+			data=`echo $line.$item`
+		done
 		echo -ne '\n { "{#JOBNAME}": "'$data'" },' >> $jenkins_return_file
 	done < $jenkins_jobnames_file
 	echo -e ']}' >> $jenkins_return_file
@@ -69,3 +73,18 @@ then
 	get_job_names
 	return_job_names
 fi
+
+
+#agenthost="`hostname -f`"
+#zserver="myzabbix"
+#zport="10051"
+
+#cat /dev/null > /tmp/zdata.txt
+#for item in "carrot" "banana" "lettuce" "tomato"; do
+# randNum="$(( (RANDOM % 30)+1 ))"
+# echo $agenthost instock[$item] $randNum >> /tmp/zdata.txt
+#done
+
+# push all these trapper values back to zabbix
+#zabbix_sender -vv -z $zserver -p $zport -i /tmp/zdata.txt >> /tmp/zsender.log 2>&1
+
