@@ -78,9 +78,12 @@ function send_stats {
 	do
 		for item in $jenkins_job_items
 		do
-			echo $agenthost jenkins.job["$item"] 200 >> $jenkins_stats_file
+			item=`echo $item | sed 's/ /_/g'`
+			line=`echo $line2 | sed 's/ /_/g'`
+			data=`echo $line2"_"$item`
+			echo $agenthost jenkins.job["$data"] 200 >> $jenkins_stats_file
 		done
-	done
+	done < $jenkins_jobnames_file
 	zabbix_sender -vv -z $zserver -p $zport -i $jenkins_stats_file >> $zabbix_sender_log_file 2>&1
 }
 
