@@ -75,10 +75,10 @@ function get_job_current_status {
 
 }
 
-if [[ $1=="jobcount" ]]
+if [[ $1="jobcount" ]]
 then
 	get_job_count
-elif [[ $1=="jobnames" ]]
+elif [[ $1="jobnames" ]]
 then
 	get_job_names
 	return_job_names
