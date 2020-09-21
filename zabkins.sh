@@ -9,6 +9,7 @@ jq='/etc/zabbix/scripts/jq-linux64'
 jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
 jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
 jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
+jenkins_return_file="/etc/zabbix/tmp/jenkins_return_file.txt"
 
 > $jenkins_api_file
 > $jenkins_jobnames_file
@@ -29,13 +30,16 @@ function get_job_names {
 }
 
 function return_job_names {
-	echo  -n '{ "data": ['
+	> $jenkins_return_file
+	echo  -n '{ "data": [' > $jenkins_return_file
 	while IFS= read -r line
 	do
-		echo -ne '\n { "{#JOBNAME}": "'$line'"  },'
+		echo -ne '\n { "{#JOBNAME}": "'$line'" },' >> $jenkins_return_file
 		
 	done < $jenkins_jobnames_file
-	echo -e '\b\n ]}' 
+	echo -e ']}' >> $jenkins_return_file
+	sed -i -e 's|\,\]\}|\n\]\}|' $jenkins_return_file
+	cat $jenkins_return_file
 }
 
 
