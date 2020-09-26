@@ -47,13 +47,12 @@ function return_job_names {
 			get_job_item_stat $job_item
 
 			# create a key based on job name and job item
-			job_item=`echo $job_item | sed 's/ /_/g'`
-			job_name=`echo $job_name | sed 's/ /_/g'`
-			key=`echo $job_name"_"$job_item`
+			key_job_item=`echo $job_item | sed 's/ /_/g'`
+			key_job_name=`echo $job_name | sed 's/ /_/g'`
+			key=`echo $key_job_name"_"$key_job_item`
 
 			#stores the stat for each key
 			echo $agenthost jenkins.job[$key] $job_item_stat >> $jenkins_stats_file
-
 			echo -ne '\n { "{#JOBNAME}": "'$key'" },' >> $jenkins_return_file
 		done
 	done < $jenkins_jobnames_file
@@ -73,11 +72,11 @@ function get_job_item_stat {
 		'SuccessRate')
 			search_string=".healthReport[].score";;
 		'LastBuild')
-			search_string=".lastBuild[].number";;
+			search_string=".lastBuild.number";;
 		'LastCompletedBuild')
-			search_string=".lastCompletedBuild[].number";;
+			search_string=".lastCompletedBuild.number";;
 		'CurrentStatus')
-			search_string=".builds[].color";;
+			search_string=".color";;
 	esac
 	while IFS= read -r job_api_json
 	do
@@ -100,10 +99,10 @@ then
 	#get current job names and create keys based on them and send them to zabbix agent
 	get_job_names
 	return_job_names
-	cat $jenkins_return_file
+#	cat $jenkins_return_file
 	
 	#send status of each jobs based on the job items using zabbix send
-	send_jobs_stats
+#	send_jobs_stats
 
 fi
 
