@@ -38,6 +38,7 @@ function return_job_names {
 	echo  -n '{ "data": [' > $jenkins_return_file
 	while IFS= read -r job_name
 	do
+		key_job_name=`echo $job_name | sed 's/ /_/g'`
 		for job_item in $jenkins_job_items
 		do
 			#get json file for each job name 
@@ -45,10 +46,13 @@ function return_job_names {
 
 			#get job status for each job name and each job item
 			get_job_item_stat $job_item
-
+			if [ $job_item_stat = "" ]
+			then 
+				job_item_stat='-1'
+			fi
 			# create a key based on job name and job item
 			key_job_item=`echo $job_item | sed 's/ /_/g'`
-			key_job_name=`echo $job_name | sed 's/ /_/g'`
+			
 			key=`echo $key_job_name"_"$key_job_item`
 
 			#stores the stat for each key
