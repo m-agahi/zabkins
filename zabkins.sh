@@ -46,7 +46,8 @@ function return_job_names {
 
 			#get job status for each job name and each job item
 			get_job_item_stat $job_item
-			if [ $job_item_stat = "" ]
+
+			if [[ $job_item_stat = "" ]]
 			then 
 				job_item_stat='-1'
 			fi
