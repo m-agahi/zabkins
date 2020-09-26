@@ -14,7 +14,7 @@ jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
 jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
 jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
 jenkins_return_file="/etc/zabbix/tmp/jenkins_return.txt"
-jenkins_job_items="success_rate"
+jenkins_job_items="SuccessRate LastBuild LastCompletedBuild CurrentStatus"
 jenkins_stats_file="/etc/zabbix/tmp/jenkins_stats.txt"
 zabbix_sender_log_file="/etc/zabbix/tmp/zsender.log"
 > $jenkins_api_file
@@ -36,15 +36,25 @@ function get_job_names {
 function return_job_names {
 	> $jenkins_return_file
 	echo  -n '{ "data": [' > $jenkins_return_file
-	while IFS= read -r line
+	while IFS= read -r job_name
 	do
-#		get_job_descriptions `echo $line | sed 's/ /\%20/g'`
-		for item in $jenkins_job_items
+		for job_item in $jenkins_job_items
 		do
-			item=`echo $item | sed 's/ /_/g'`
-			line=`echo $line | sed 's/ /_/g'`
-			data=`echo $line"_"$item`
-			echo -ne '\n { "{#JOBNAME}": "'$data'" },' >> $jenkins_return_file
+			#get json file for each job name 
+			get_job_descriptions `echo $job_name | sed 's/ /\%20/g'`
+
+			#get job status for each job name and each job item
+			get_job_item_stat $job_item
+
+			# create a key based on job name and job item
+			job_item=`echo $job_item | sed 's/ /_/g'`
+			job_name=`echo $job_name | sed 's/ /_/g'`
+			key=`echo $job_name"_"$job_item`
+
+			#stores the stat for each key
+			echo $agenthost jenkins.job[$key] $job_item_stat >> $jenkins_stats_file
+
+			echo -ne '\n { "{#JOBNAME}": "'$key'" },' >> $jenkins_return_file
 		done
 	done < $jenkins_jobnames_file
 	echo -e ']}' >> $jenkins_return_file
@@ -55,47 +65,56 @@ function get_job_descriptions {
 	> $jenkins_job_api_file
 	curl --silent --show-error $url/job/$1/api/json > $jenkins_job_api_file
 	echo  >> $jenkins_job_api_file
-	get_job_success_rate
 }
 
-function get_job_success_rate {
-	while IFS= read -r line_1
+# get status of each item and job passed to it
+function get_job_item_stat {
+	case $1 in
+		'SuccessRate')
+			search_string=".healthReport[].score";;
+		'LastBuild')
+			search_string=".lastBuild[].number";;
+		'LastCompletedBuild')
+			search_string=".lastCompletedBuild[].number";;
+		'CurrentStatus')
+			search_string=".builds[].color";;
+	esac
+	while IFS= read -r job_api_json
 	do
-		search_string=".healthReport[].score"
-		success_rate=`echo $line_1 | $jq $search_string`
+		job_item_stat=`echo $job_api_json | $jq $search_string`
 	done < $jenkins_job_api_file 	
 }
 
-function get_job_current_status {
-	search_string=".jobs[$1].color"
-	status=`./$jq $search_string $jenkins_api_file | sed -e 's/^"\|"$//g'`
-	echo $status	
 
-}
 
-function send_stats {
-	while IFS= read -r line2
-	do
-		for item in $jenkins_job_items
-		do
-			item=`echo $item | sed 's/ /_/g'`
-			line2=`echo $line2 | sed 's/ /_/g'`
-			key=`echo $line2"_"$item`
-			stats=200
-			echo $agenthost jenkins.job[$key] $stats >> $jenkins_stats_file
-		done
-	done < $jenkins_jobnames_file
+function send_jobs_stats {
 	zabbix_sender -vv -z $zserver -p $zport -i $jenkins_stats_file >> $zabbix_sender_log_file 2>&1
 }
+
 
 if  [ $1 = 'jobcount' ] 
 then
 	get_job_count
 elif [ $1 = 'jobnames' ] 
 then
+	#get current job names and create keys based on them and send them to zabbix agent
 	get_job_names
 	return_job_names
 	cat $jenkins_return_file
-	send_stats
+	
+	#send status of each jobs based on the job items using zabbix send
+	send_jobs_stats
+
 fi
 
+
+
+
+#function get_job_current_status {
+#	job_current_status=`cat $jenkins_api_file | \
+#		sed 's|{|\n{|g' | \
+#		grep $1 | \
+#		grep color | \
+#		cut -d ":" -f 7 | \
+#		cut -d '"' -f 2`
+#

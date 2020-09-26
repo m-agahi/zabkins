@@ -1,0 +1,57 @@
+curl --silent --show-error http://monitor:119cf029e9a6e0d1ed8445137a6f17d658@192.168.145.173:8080/api/json
+
+http://192.168.145.173:8080/api/json?pretty=true
+http://192.168.145.173:8080/job/high-team-pipline1/api/json
+http://192.168.145.173:8080/job/high-team-pipline1/5/api/json?pretty=true
+http://192.168.145.173:8080/job/pipe%202/2/consoleText
+
+
+job status : color : blue_anime = in progress
+current buld number : nextBuildNumber	5
+lastSuccessfulBuild :
+lastStableBuild
+lastBuild
+healthReport - in queu
+lastFailedBuild
+lastUnsuccessfulBuild
+***** log management***********
+
+
+
+1. list jobs - done
+2. get job details
+3. get latest build details
+	a. if failed or unsuccsessfull or unstable, get console output
+4. determine whther th job is running
+5. disable a deleted job
+
+
+
+1. create a discovery rule
+2. create item prototypes for jobs, builds, 
+3. create graphs and triggers for jobs, builds
+4. get hob start stop logs and status and errors and visualize them
+
+
+
+
+grep -Po '"state":"\K[^"]*'
+
+1. use json api to get the job name - done
+2. use json to get job detais
+	a. last stable build
+	b. current build status
+	c. build failure rate
+	d. current build output. if its a failure there should be notifications
+	e. current bulding status - if a job is running it should start a counter 
+	f. if a job is takin longer than ususal ( what is usual ?) it should creat a notif
+	g. if a job is hanged, aborted, blocked, ...
+	h. if the server is busy
+
+3. get overall status of the jenkins ( build raite - failded rate - resons .... )
+3. parse the data
+4. send the data to zabbix or query from zabbox agent ???
+5. use auto descovery with prototype items
+6. disable removed jobs
+7. create dashboards graphs triggers and more with zabbix using prototype
+
