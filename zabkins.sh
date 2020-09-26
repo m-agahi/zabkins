@@ -99,10 +99,10 @@ then
 	#get current job names and create keys based on them and send them to zabbix agent
 	get_job_names
 	return_job_names
-#	cat $jenkins_return_file
+	cat $jenkins_return_file
 	
 	#send status of each jobs based on the job items using zabbix send
-#	send_jobs_stats
+	send_jobs_stats
 
 fi
 
