@@ -14,7 +14,9 @@ jenkins_api_file="/etc/zabbix/tmp/jenkins_api.json"
 jenkins_jobnames_file="/etc/zabbix/tmp/jenkins_jobnames.txt"
 jenkins_job_api_file="/etc/zabbix/tmp/jenkins_job_api.json"
 jenkins_return_file="/etc/zabbix/tmp/jenkins_return.txt"
-jenkins_job_items="SuccessRate LastBuild LastCompletedBuild CurrentStatus"
+jenkins_job_items="SuccessRate CurrentStatus"
+### removed metrics:
+#jenkins_job_items="LastBuild LastCompletedBuild LastFailedBuild" 
 jenkins_stats_file="/etc/zabbix/tmp/jenkins_stats.txt"
 zabbix_sender_log_file="/etc/zabbix/tmp/zsender.log"
 > $jenkins_api_file
@@ -71,6 +73,25 @@ function get_job_descriptions {
 	echo  >> $jenkins_job_api_file
 }
 
+function job_item_stat_parser {
+	### some text conversion
+	job_item_stat=`echo $job_item_stat | sed -e 's/^"\|"$//g'`
+	case $job_item_stat in
+		red)
+			job_item_stat=1;;
+		blue)
+			job_item_stat=10;;
+		blue_anime)
+			job_item_stat=5;;
+		notbuilt)
+			job_item_stat=-1;;
+		aborted)
+			job_item_stat=0;;
+		aborted_anime)
+			job_item_stat=5;;
+	esac
+}
+
 # get status of each item and job passed to it
 function get_job_item_stat {
 	case $1 in
@@ -82,10 +103,13 @@ function get_job_item_stat {
 			search_string=".lastCompletedBuild.number";;
 		'CurrentStatus')
 			search_string=".color";;
+		'LastFailedBuild')
+			search_string=".lastFailedBuild.number";;
 	esac
 	while IFS= read -r job_api_json
 	do
 		job_item_stat=`echo $job_api_json | $jq $search_string`
+		job_item_stat_parser
 	done < $jenkins_job_api_file 	
 }
 
