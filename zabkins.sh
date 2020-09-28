@@ -123,7 +123,7 @@ function return_failure_cause {
 	keyf='failurecause'
 	jenkins_failure_cuase='{ "data": [\n { "{#JOBF}": "'$keyf'" }]}' 
 	echo $jenkins_failure_cuase
-	jfc=`echo $agenthost jenkins.job[$keyf] 'reson for failure!!!'`
+	jfc=`echo $agenthost jenkins.job[$keyf] "reson_for_failure"`
 	zabbix_sender -vv -z $zserver -p $zport -i $jfc >> $zabbix_sender_log_file 2>&1
 
 }
