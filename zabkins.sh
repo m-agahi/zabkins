@@ -119,11 +119,19 @@ function send_jobs_stats {
 	zabbix_sender -vv -z $zserver -p $zport -i $jenkins_stats_file >> $zabbix_sender_log_file 2>&1
 }
 
+function return_failure_cause {
+	keyf='failurecause'
+	jenkins_failure_cuase='{ "data": [\n { "{#JOBF}": "'$keyf'" }]}' 
+	echo $jenkins_failure_cuase
+	jfc=`echo $agenthost jenkins.job[$keyf] 'reson for failure!!!'`
+	zabbix_sender -vv -z $zserver -p $zport -i $jfc >> $zabbix_sender_log_file 2>&1
 
-if  [ $1 = 'jobcount' ] 
+}
+
+if  [[ $1 = 'jobcount' ]] 
 then
 	get_job_count
-elif [ $1 = 'jobnames' ] 
+elif [[ $1 = 'jobnames' ]] 
 then
 	#get current job names and create keys based on them and send them to zabbix agent
 	get_job_names
@@ -132,6 +140,10 @@ then
 	
 	#send status of each jobs based on the job items using zabbix send
 	send_jobs_stats
+elif [[ $1 = 'failurecause' ]]
+then
+	get_job_names
+	return_failure_cause
 
 fi
 
